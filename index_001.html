@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JAYA • XV Dynamic Media Player</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b1220; --panel:#0e1a2f; --line:#14203a; --text:#e6f3ff; --muted:#9db3c9;
+      --accent:#5eead4; --good:#16a34a; --bad:#dc2626;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 0% -20%, rgba(94,234,212,.10), transparent 60%),
+        radial-gradient(1000px 700px at 120% 0%, rgba(94,234,212,.08), transparent 60%),
+        linear-gradient(135deg, #0b1220 0%, #0f1b33 100%);
+      font-family:Space Grotesk, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      letter-spacing:.2px
+    }
+    a{color:inherit; text-decoration:none}
+
+    .row{display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid var(--line)}
+    .pill{border:1px solid var(--line); border-radius:999px; padding:6px 10px; font-size:12px}
+    .btn{cursor:pointer; border:1px solid var(--line); background:#10243b; color:var(--text); padding:10px 14px; border-radius:999px; font-weight:700}
+    .btn:hover{background:#122b45}
+    .btn.accent{background:var(--accent); color:#00131a; border-color:transparent}
+    .btn.accent:hover{filter:brightness(.95)}
+
+    .hero{display:grid; grid-template-columns: 1.2fr .8fr; gap:18px; padding:18px}
+    @media (max-width: 900px){ .hero{grid-template-columns:1fr} }
+    .panel{border:1px solid var(--line); border-radius:18px; overflow:hidden; background:var(--panel)}
+    .pad{padding:22px}
+    .title{font-size: clamp(38px, 7.2vw, 96px); line-height:.9; font-weight:800; letter-spacing:-.5px}
+    .sub{margin-top:10px; color:var(--muted); font-size: clamp(14px, 2.2vw, 18px)}
+    .controls{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:10px}
+    .small{font-size:12px; color:var(--muted)}
+    .seek{flex:1; min-width:160px}
+    .chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
+    .chip{padding:6px 10px; border-radius:999px; border:1px solid var(--line); background:#0f2238; font-size:12px}
+    .chip.good{border-color:rgba(22,163,74,.5); color:#eafff4}
+    .chip.bad{border-color:rgba(220,38,38,.5); color:#ffecec}
+    .kpis{display:grid; grid-template-columns: repeat(3,1fr); gap:10px; margin-top:14px}
+    @media (max-width: 900px){ .kpis{grid-template-columns:1fr 1fr} }
+    .kpi{border:1px solid var(--line); border-radius:14px; padding:12px; background:#0c1830}
+    .kpi .label{font-size:12px; color:var(--muted)}
+    .kpi .value{font-weight:900; font-size:20px; margin-top:6px}
+
+    .canvasWrap{position:relative}
+    canvas{display:block; width:100%; height:280px; background:#071226; border-top:1px solid var(--line)}
+    .track{position:absolute; inset:auto 0 12px 12px; display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+    .status{position:absolute; top:10px; right:10px; padding:6px 10px; border-radius:999px; border:1px solid var(--line); background:#0f2238; font-size:12px}
+
+    footer{margin-top:auto}
+    .footerRow{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 18px; border-top:1px solid var(--line)}
+
+    dialog{position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.6); backdrop-filter:blur(6px)}
+    dialog[open]{display:grid}
+    .sheet{width:min(820px, 94vw); background:#0e1a2f; border:1px solid var(--line); border-radius:16px; overflow:hidden}
+    .sheet header{display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--line); font-weight:800}
+    .sheet .body{padding:16px}
+    .linkGrid{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    @media (max-width: 720px){ .linkGrid{grid-template-columns:1fr} }
+    .linkCard{display:block; padding:14px; border:1px solid var(--line); border-radius:12px; background:#0f2238}
+    .linkCard .label{color:var(--muted); font-size:12px}
+    .linkCard .title{font-weight:800; font-size:18px; margin-top:6px}
+
+    :focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <div class="row">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="pill">JAYA</span>
+        <span class="pill">XV Dynamic Media Player</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button class="btn" id="openModal">Info / Inspiration</button>
+        <a class="btn accent" href="https://www.jayaproduction.com" target="_self" rel="noopener">⬅ Back to JAYAPRODUCTION.COM</a>
+      </div>
+    </div>
+
+    <section class="hero">
+      <div class="panel pad">
+        <div class="pill" style="display:inline-flex;gap:8px;align-items:center">AUDIO • VISUAL • CUE-DRIVEN</div>
+        <h1 class="title">Minimal energy.<br>Max impact.</h1>
+        <p class="sub">As the track hits cue-points, the interface reacts — chips flip, KPIs change, and the visualizer pulses to the beat.</p>
+
+        <div class="controls" role="group" aria-label="Audio controls">
+          <button class="btn accent" id="playBtn">▶ Play</button>
+          <button class="btn" id="pauseBtn">⏸ Pause</button>
+          <button class="btn" id="muteBtn" aria-pressed="false">🔇 Mute</button>
+
+          <label class="small" for="seek">Seek</label>
+          <input class="seek" id="seek" type="range" min="0" max="100" value="0" step="0.1" />
+          <span class="small" id="time" aria-live="polite">0:00 / 0:00</span>
+
+          <label class="small" for="rate">Speed</label>
+          <select class="btn" id="rate">
+            <option>0.75×</option>
+            <option selected>1×</option>
+            <option>1.25×</option>
+            <option>1.5×</option>
+            <option>2×</option>
+          </select>
+        </div>
+
+        <div class="chips">
+          <span class="chip" id="symbol">$JAYA</span>
+          <span class="chip" id="sentiment">NEUTRAL</span>
+          <span class="chip" id="headline">Waiting for cue…</span>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi"><div class="label">UI Mode</div><div class="value" id="kpiMode">Idle</div></div>
+          <div class="kpi"><div class="label">Energy</div><div class="value" id="kpiEnergy">--</div></div>
+          <div class="kpi"><div class="label">Section</div><div class="value" id="kpiSection">Intro</div></div>
+        </div>
+      </div>
+
+      <div class="panel canvasWrap">
+        <span class="status" id="status">Ready</span>
+        <canvas id="viz"></canvas>
+        <div class="track"><span class="chip">Track: groovy-vibe-427121.mp3</span></div>
+
+        <noscript>
+          <div style="padding:12px;border-top:1px solid var(--line);background:#10243b">
+            JavaScript is off. <a href="groovy-vibe-427121.mp3" download style="color:var(--accent)">Download audio</a>.
+          </div>
+        </noscript>
+
+        <audio id="player" preload="metadata">
+          <source src="groovy-vibe-427121.mp3" type="audio/mpeg" />
+        </audio>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footerRow">
+        <span class="small">© <span id="year"></span> JAYA — HTML5 • CSS • JS • Web Audio</span>
+        <a class="btn accent" href="https://www.jayaproduction.com" target="_self">⬅ Back to JAYAPRODUCTION.COM</a>
+      </div>
+    </footer>
+  </div>
+
+  <dialog id="modal">
+    <div class="sheet">
+      <header>
+        <span>Info & Inspiration</span>
+        <button class="btn" id="closeModal">✕</button>
+      </header>
+      <div class="body">
+        <p class="small">HTMLMediaElement control, media events, cue-points, DOM changes, and a Web Audio visualizer.</p>
+        <div class="linkGrid" style="margin-top:10px">
+          <a class="linkCard" href="https://p5js.org/reference/p5/p5.MediaElement/" target="_blank" rel="noopener">
+            <div class="label">p5.js</div><div class="title">p5.MediaElement</div>
+          </a>
+          <a class="linkCard" href="https://www.geeksforgeeks.org/javascript/dom-document-object-model/" target="_blank" rel="noopener">
+            <div class="label">GeeksforGeeks</div><div class="title">DOM (JavaScript)</div>
+          </a>
+          <a class="linkCard" href="https://www.jayaproduction.com" target="_blank" rel="noopener">
+            <div class="label">Back Home</div><div class="title">jayaproduction.com</div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    const $ = s => document.querySelector(s);
+    const pad = n => String(n).padStart(2,'0');
+    const fmt = s => { s = Math.max(0, s|0); return `${(s/60|0)}:${pad(s%60)}`; };
+
+    const audio = $('#player');
+    const playBtn = $('#playBtn');
+    const pauseBtn = $('#pauseBtn');
+    const muteBtn = $('#muteBtn');
+    const rateSel = $('#rate');
+    const seek = $('#seek');
+    const timeEl = $('#time');
+    const status = $('#status');
+
+    const symbol = $('#symbol');
+    const sent = $('#sentiment');
+    const head = $('#headline');
+    const kMode = $('#kpiMode');
+    const kEnergy = $('#kpiEnergy');
+    const kSect = $('#kpiSection');
+
+    const cnv = $('#viz'); const ctx = cnv.getContext('2d');
+
+    let ctxAudio, analyser, srcNode, fft;
+
+    function setupAudio(){
+      try{
+        if (!ctxAudio) {
+          ctxAudio = new (window.AudioContext || window.webkitAudioContext)();
+          analyser = ctxAudio.createAnalyser();
+          analyser.fftSize = 256;
+          fft = new Uint8Array(analyser.frequencyBinCount);
+        }
+        if (!srcNode) {
+          srcNode = ctxAudio.createMediaElementSource(audio);
+          srcNode.connect(analyser); analyser.connect(ctxAudio.destination);
+        }
+      }catch(e){}
+    }
+    async function resume(){
+      setupAudio();
+      if (ctxAudio && ctxAudio.state==='suspended'){ try{ await ctxAudio.resume(); }catch{} }
+    }
+
+    function draw(){
+      requestAnimationFrame(draw);
+      const w = cnv.width = cnv.clientWidth, h = cnv.height = cnv.clientHeight;
+      ctx.clearRect(0,0,w,h);
+
+      ctx.strokeStyle = '#0e2038'; ctx.lineWidth = 1;
+      for(let x=0;x<w;x+=24){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+      for(let y=0;y<h;y+=24){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+
+      if (analyser){
+        analyser.getByteFrequencyData(fft);
+        const cx=w/2, cy=h/2, R=Math.min(w,h)/4;
+        for (let i=0;i<fft.length;i++){
+          const ang=(i/fft.length)*Math.PI*2;
+          const amp=fft[i]/255, len=R*(.2+.9*amp);
+          const x1=cx+Math.cos(ang)*R*.5, y1=cy+Math.sin(ang)*R*.5;
+          const x2=cx+Math.cos(ang)*(R*.5+len), y2=cy+Math.sin(ang)*(R*.5+len);
+          ctx.strokeStyle=`rgba(94,234,212,${.35+.65*amp})`;
+          ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+        }
+        const avg = fft.reduce((a,b)=>a+b,0)/fft.length;
+        kEnergy.textContent = Math.round((avg/255)*100);
+      }
+    }
+    draw();
+
+    playBtn.addEventListener('click', async () => {
+      await resume();
+      try { await audio.play(); status.textContent = 'Playing'; }
+      catch { status.textContent = 'Tap page then press Play'; }
+    });
+    pauseBtn.addEventListener('click', () => { audio.pause(); status.textContent='Paused'; });
+    muteBtn.addEventListener('click', () => {
+      audio.muted = !audio.muted;
+      muteBtn.setAttribute('aria-pressed', String(audio.muted));
+      muteBtn.textContent = audio.muted ? '🔊 Unmute' : '🔇 Mute';
+    });
+    rateSel.addEventListener('change', () => {
+      const v = parseFloat(rateSel.value.replace('×','')) || 1; audio.playbackRate = v;
+    });
+
+    audio.addEventListener('loadedmetadata', () => {
+      seek.max = audio.duration || 0;
+      timeEl.textContent = `${fmt(0)} / ${fmt(audio.duration||0)}`;
+      addCues();
+    });
+    audio.addEventListener('timeupdate', () => {
+      seek.value = audio.currentTime;
+      timeEl.textContent = `${fmt(audio.currentTime)} / ${fmt(audio.duration||0)}`;
+    });
+    seek.addEventListener('input', () => { audio.currentTime = +seek.value; });
+    audio.addEventListener('ended', () => { status.textContent = 'Ended'; kMode.textContent='Idle'; });
+    audio.addEventListener('error', () => { status.textContent = `Audio error: ${audio.error?.code||'?'}`; });
+
+    let meta;
+    function addCues(){
+      const d = audio.duration || 60; if (meta) return;
+      meta = audio.addTextTrack('metadata','Actions'); meta.mode = 'hidden';
+      const arr = [
+        { s:.01, e:.12, a:{type:'section', name:'Intro',  sentiment:'good', headline:'Kickoff — breathe in'} },
+        { s:.12, e:.45, a:{type:'theme',   name:'Pulse',  sentiment:'good', headline:'Groove locked'} },
+        { s:.45, e:.75, a:{type:'section', name:'Break',  sentiment:'bad',  headline:'Tension rising'} },
+        { s:.75, e:.95, a:{type:'theme',   name:'Finale', sentiment:'good', headline:'Release — shine'} },
+        { s:.95, e:.99, a:{type:'section', name:'Outro',  sentiment:'good', headline:'Fade to black'} },
+      ];
+      arr.forEach(c => meta.addCue(new VTTCue(c.s*d, c.e*d, JSON.stringify(c.a))));
+      meta.addEventListener('cuechange', () => {
+        const list = Array.from(meta.activeCues||[]);
+        if (!list.length) return;
+        try { onAction(JSON.parse(list.at(-1).text)); } catch {}
+      });
+    }
+    function onAction(a){
+      if (a.type==='section'){ kMode.textContent='Section'; kSect.textContent=a.name; head.textContent=a.headline; setSent(a.sentiment); }
+      if (a.type==='theme'){   kMode.textContent='Theme';   head.textContent=a.headline; setSent(a.sentiment); }
+    }
+    function setSent(s){
+      sent.textContent = s.toUpperCase();
+      sent.classList.remove('good','bad');
+      if (s==='good') sent.classList.add('good'); else if (s==='bad') sent.classList.add('bad');
+      status.style.background = s==='good' ? '#0f291a' : '#2a1313';
+      symbol.textContent = s==='good' ? '$JAYA' : '$JAYA?';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+      if (e.key === ' ') { e.preventDefault(); audio.paused ? playBtn.click() : pauseBtn.click(); }
+      if (e.key === 'ArrowRight') audio.currentTime = Math.min(audio.duration||0, audio.currentTime + 5);
+      if (e.key === 'ArrowLeft')  audio.currentTime = Math.max(0, audio.currentTime - 5);
+      if (e.key.toLowerCase()==='m') muteBtn.click();
+    });
+    document.addEventListener('touchstart', resume, { once:true });
+    document.addEventListener('click', resume, { once:true });
+
+    const modal = $('#modal');
+    $('#openModal').addEventListener('click', ()=> modal.showModal());
+    $('#closeModal').addEventListener('click', ()=> modal.close());
+    modal.addEventListener('click', e=>{ if(e.target===modal) modal.close(); });
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
